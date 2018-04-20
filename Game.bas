@@ -1,5 +1,6 @@
 PRINT "MENU"
 DIM SHARED XpPoint$(100)
+DIM SHARED filename$
 PRINT
 PRINT "1) Create New File"
 PRINT
@@ -12,28 +13,34 @@ IF choice = 1 THEN
     Again:
     CLS
     PRINT "Name of Save:"
-    INPUT "", Filename$
-    PRINT "Is "; Filename$; " ok?(Y/N)"
+    INPUT "", filename$
+    PRINT "Is "; filename$; " ok?(Y/N)"
     INPUT "", Filecheck$
     IF Filecheck$ = "Y" THEN
-        LET Filename$ = Filename$ + ".TXT"
+        LET filename$ = filename$ + ".TXT"
     ELSEIF Filecheck$ = "N" THEN
         GOTO Again
     END IF
+    PRINT filename$
+    SLEEP 5
     CALL intro
 ELSEIF choice = 2 THEN
     again2:
     CLS
-    INPUT "Name of file ", Filename$
-    PRINT "Is "; Filename$; " ok?(Y/N)"
+    INPUT "Name of file: ", filename$
+    PRINT "Is "; filename$; " ok?(Y/N)"
     INPUT "", Filecheck$
     IF Filecheck$ = "Y" THEN
-        LET Filename$ = Filename$ + ".TXT"
+        LET filename$ = filename$ + ".TXT"
     ELSEIF Filecheck$ = "N" THEN
         GOTO again2
     END IF
-    OPEN Filename$ FOR INPUT AS #1
-    PRINT #1, Name$, h, s, w
+    OPEN filename$ FOR INPUT AS #1
+    INPUT #1, Name$, h, s, m
+    PRINT "Name: "; Name$
+    PRINT "Health: "; h
+    PRINT "Strength   "; s
+    PRINT "Magic "; m
     CLOSE #1
 END IF
 
@@ -66,8 +73,7 @@ INPUT "Name your Character: ", Name$
 PRINT "Is "; Name$; " ok? (Y/N)", YN$
 YN$ = UCASE$(YN$)
 IF YN$ = "N" THEN GOTO nameagain
-OPEN Filename$ FOR OUTPUT AS #1
+OPEN filename$ FOR OUTPUT AS #1
 WRITE #1, Name$, h, s, w
 CLOSE #1
-
 END SUB
