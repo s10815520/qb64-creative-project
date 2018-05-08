@@ -1,4 +1,5 @@
 DIM SHARED h
+dim shared cpoint
 DIM SHARED hp
 DIM SHARED enemyhealth
 DIM SHARED karma
@@ -346,8 +347,10 @@ SUB enemyturn
 enemyattack = enemyhealth / 3
 RANDOMIZE TIMER
 enemydamage = INT(RND * enemyattack)
+CALL drawsim
 PRINT "Enemy attacks for"; enemydamage
-hp = hp - enemydamage
+hp = (hp * 5) - enemydamage
+hp = hp / 5
 END SUB
 
 SUB night1
@@ -369,11 +372,12 @@ IF x$ = "Y" THEN
     enemyhealth = 500
     SLEEP 1
     hp = h
+    COLOR 4: PRINT "ENEMY INTRUDER: RECOMMENDED OPTION - KILL"
+    SLEEP 2
     WHILE hp > 0 AND enemyhealth > 0
         CLS
         CALL drawsim
-        COLOR 4: PRINT "ENEMY INTRUDER: RECOMMENDED OPTION - KILL"
-        COLOR 15: PRINT "Health ="; h * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
+        COLOR 15: PRINT "Health ="; hp * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
         INPUT "", x
 
         IF x = 1 THEN
@@ -400,17 +404,38 @@ IF x$ = "Y" THEN
             END IF
             enemyhealth = enemyhealth - 3 * w
         END IF
+        IF icechance <> 1 THEN CALL enemyturn
     WEND
+    IF enemyhealth = 0 THEN
+        CALL drawsim
+        PRINT "Enemy attacks for";
+        COLOR 4: PRINT "999";
+        COLOR 7: PRINT "Damage"
+        SLEEP 3
+        CALL afterlife1
+    ELSEIF hp = 0 THEN
+        PRINT "YOU DIED"
+        CLOSE #1
+        SLEEP 2
+        CALL afterlife1
+    END IF
 ELSEIF x$ = "N" THEN
     COLOR 7: PRINT "You go back to bed."
     CALL dotdot
     PRINT "You awake again, now there is a knock at your door"
     COLOR 14: INPUT "Call out? (Y/N)", x$
     IF x$ = "Y" THEN
+        PRINT "Whoever was at your door has left, you go back to sleep"
+        CALL dotdot
+        PRINT "You never woke up"
+        SLEEP 3
+        CALL afterlife1
     ELSEIF x$ = "N" THEN
         COLOR 7: PRINT "You go back to sleep"
         CALL dotdot
         COLOR 15: PRINT "You never woke up"
+        SLEEP 3
+        CALL afterlife1
     END IF
 
 END IF
@@ -431,4 +456,121 @@ NEXT i
 CLS
 END SUB
 
+SUB afterlife1
+CLS
+cpoint = 0.0111
+OPEN filename$ FOR OUTPUT AS #1
+WRITE #1, Name$, h, s, w, cpoint, karma
+CLOSE #1
+IF karma > 0 THEN
+    PRINT "Welcome to Heaven"
+    PRINT "You will soon be deployed to fight in purgatory against the demons of the underworld."
+    PRINT "Each kill will give you a level, enemies get progressively harder."
+    PRINT "To win, kill Satan himself, he will apear eventually, attracted by your growing power."
+    SLEEP 10
+    CALL Heaven
+ELSEIF karma = 0 THEN
+    PRINT "Welcome to Purgatory"
+    PRINT "Each kill will give you a level and enemies get progressively harder."
+    PRINT "Fight for yourself and survive. You can choose a side to take."
+    again:
+    INPUT "What side will you fight for, Heaven or Hell:", X$
+    IF X$ = "Heaven" THEN
+        CALL Heaven
+    ELSEIF X$ = "Hell" THEN
+        CALL Underworld
+    ELSE
+        GOTO again:
+    END IF
+ELSEIF karma < 0 THEN
+    PRINT "Welcome to the Underworld"
+    PRINT "Fight for the demons and kill andgels on the plains of purgatory."
+    PRINT "Each kill will give you a level, enemies get progressively harder."
+    PRINT "To win, kill God, who will come to the battlefield, attracted by your growing power."
+    SLEEP 10
+    CALL Underworld
+END IF
 
+END SUB
+
+SUB Heaven
+CLS
+cpoint = 0.1111
+OPEN filename$ FOR OUTPUT AS #1
+WRITE #1, Name$, h, s, w, cpoint, karma
+CLOSE #1
+OPEN filename$ FOR INPUT AS #1
+WHILE h + s + w <> 100
+    drawsim
+    hp = h
+    enemyhealth = hp * 3
+    WHILE hp > 0 AND enemyhealth > 0
+        CLS
+        CALL drawsim
+        COLOR 15: PRINT "Health ="; hp * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
+        INPUT "", x
+        icechance = 0
+        IF x = 1 THEN
+            CALL punch
+            enemyhealth = enemyhealth - 5 * s
+        ELSEIF x = 2 THEN
+            CALL kick
+            enemyhealth = enemyhealth - 4 * s
+        ELSEIF x = 3 THEN
+            CALL fire
+            enemyhealth = enemyhealth - 3 * w
+            RANDOMIZE TIMER
+            firechance = INT(RND * 2)
+            IF firechance = 1 THEN
+                PRINT "Enemy is set on fire!"
+            END IF
+        ELSEIF x = 4 THEN
+            CALL ice
+            RANDOMIZE TIMER
+            icechance = INT(RND * 2)
+            IF icechance = 1 THEN
+                CALL drawsim
+                PRINT "Enemy is frozen!"
+            END IF
+            enemyhealth = enemyhealth - 3 * w
+        END IF
+        IF icechance <> 1 THEN CALL enemyturn
+
+    WEND
+    IF hp <= 0 THEN
+        PRINT "YOU DIED, STARTING FROM LAST ENEMY."
+    ELSEIF enemyhealth <= 0 THEN
+
+    END IF
+WEND
+CLOSE #1
+END SUB
+
+SUB Underworld
+cpoint = 0.2111
+OPEN filename$ FOR OUTPUT AS #1
+WRITE #1, Name$, h, s, w, cpoint, karma
+CLOSE #1
+
+END SUB
+SUB levelup
+again:
+CLS
+PRINT "Choose stat to pump: H,S, or W"
+INPUT "Stat: ", Stat$
+OPEN filename$ FOR OUTPUT AS #1
+IF Stat$ = "S" THEN
+    s = s + 1
+ELSEIF Stat$ = "H" THEN
+    h = h + 1
+ELSEIF Stat$ = "W" THEN
+    w = w + 1
+ELSE
+    GOTO again
+END IF
+WRITE #1, Name$, h, s, w, cpoint
+CLOSE #1
+CLS
+SLEEP 1
+
+END SUB
