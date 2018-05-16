@@ -1,5 +1,6 @@
 DIM SHARED h
-dim shared cpoint
+DIM SHARED enemynum
+DIM SHARED cpoint
 DIM SHARED hp
 DIM SHARED enemyhealth
 DIM SHARED karma
@@ -45,12 +46,13 @@ ELSEIF choice = 2 THEN
         GOTO again2
     END IF
     OPEN filename$ FOR INPUT AS #1
-    INPUT #1, Name$, h, s, m, cpoint
+    INPUT #1, Name$, h, s, w, cpoint
     PRINT "Name: "; Name$
     PRINT "Health: "; h
     PRINT "Strength   "; s
-    PRINT "Magic "; m
+    PRINT "Magic "; w
     SLEEP 3
+    CLOSE #1
     IF cpoint = 0.0001 THEN
         CLOSE #1
         CALL start
@@ -59,7 +61,10 @@ ELSEIF choice = 2 THEN
         CLOSE #1
         CALL night1
     END IF
-    CLOSE #1
+    IF cpoint = 0.1111 THEN
+        CALL Heaven
+    END IF
+
     CALL tutorial
 END IF
 
@@ -502,8 +507,8 @@ CLOSE #1
 OPEN filename$ FOR INPUT AS #1
 WHILE h + s + w <> 100
     drawsim
-    hp = h
-    enemyhealth = hp * 3
+    hp = h * 5
+    enemyhealth = (hp * 3) + enemynum * 3
     WHILE hp > 0 AND enemyhealth > 0
         CLS
         CALL drawsim
@@ -523,6 +528,7 @@ WHILE h + s + w <> 100
             firechance = INT(RND * 2)
             IF firechance = 1 THEN
                 PRINT "Enemy is set on fire!"
+                enemyhealth = enemyhealth - 2 * w
             END IF
         ELSEIF x = 4 THEN
             CALL ice
@@ -539,11 +545,78 @@ WHILE h + s + w <> 100
     WEND
     IF hp <= 0 THEN
         PRINT "YOU DIED, STARTING FROM LAST ENEMY."
+        hp = h * 5
+        enemyhealth = hp * 3
     ELSEIF enemyhealth <= 0 THEN
-
+        PRINT "Level up!"
+        enemynum = enemynum + 1
+        CALL levelup
     END IF
 WEND
+
+
+COLOR 4: PRINT "Enemy Appearing:"
+PRINT "A powerful entity has detected your presence."
+PRINT "Prepare for combat."
+hp = h * 5
+enemyhealth = 10000
+WHILE hp > 0 AND enemyhealth > 0
+    CLS
+    CALL drawsim
+    COLOR 15: PRINT "Health ="; hp * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
+    INPUT "", x
+    icechance = 0
+    IF x = 1 THEN
+        CALL punch
+        enemyhealth = enemyhealth - 5 * s
+    ELSEIF x = 2 THEN
+        CALL kick
+        enemyhealth = enemyhealth - 4 * s
+    ELSEIF x = 3 THEN
+        CALL fire
+        enemyhealth = enemyhealth - 3 * w
+        RANDOMIZE TIMER
+        firechance = INT(RND * 2)
+        IF firechance = 1 THEN
+            PRINT "Enemy is set on fire!"
+            enemyhealth = enemyhealth - 2 * w
+        END IF
+    ELSEIF x = 4 THEN
+        CALL ice
+        RANDOMIZE TIMER
+        icechance = INT(RND * 2)
+        IF icechance = 1 THEN
+            CALL drawsim
+            PRINT "Enemy is frozen!"
+        END IF
+        enemyhealth = enemyhealth - 3 * w
+    END IF
+    IF icechance <> 1 THEN CALL enemyturn2
+
+WEND
+IF hp <= 0 THEN
+    PRINT "YOU DIED, STARTING FROM LAST ENEMY."
+    hp = h * 5
+    enemyhealth = hp * 3
+ELSEIF enemyhealth <= 0 THEN
+    PRINT "Level up!"
+    enemynum = enemynum + 1
+    CALL levelup
+END IF
+
+SLEEP 5
 CLOSE #1
+END SUB
+
+SUB enemyturn2
+enemyattack = enemyhealth / 5
+RANDOMIZE TIMER
+enemydamage = INT(RND * enemyattack)
+CALL drawsim
+PRINT "Enemy attacks for"; enemydamage
+hp = (hp * 5) - enemydamage
+hp = hp / 5
+
 END SUB
 
 SUB Underworld
@@ -551,14 +624,16 @@ cpoint = 0.2111
 OPEN filename$ FOR OUTPUT AS #1
 WRITE #1, Name$, h, s, w, cpoint, karma
 CLOSE #1
-
 END SUB
+
 SUB levelup
+CLOSE #1
+OPEN filename$ FOR OUTPUT AS #1
 again:
 CLS
 PRINT "Choose stat to pump: H,S, or W"
 INPUT "Stat: ", Stat$
-OPEN filename$ FOR OUTPUT AS #1
+
 IF Stat$ = "S" THEN
     s = s + 1
 ELSEIF Stat$ = "H" THEN
@@ -568,9 +643,12 @@ ELSEIF Stat$ = "W" THEN
 ELSE
     GOTO again
 END IF
-WRITE #1, Name$, h, s, w, cpoint
+
+WRITE #1, Name$, h, s, w, cpoint, enemynum
 CLOSE #1
+
 CLS
+PRINT "Points Saved."
 SLEEP 1
 
 END SUB
