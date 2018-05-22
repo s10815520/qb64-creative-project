@@ -505,7 +505,7 @@ OPEN filename$ FOR OUTPUT AS #1
 WRITE #1, Name$, h, s, w, cpoint, karma
 CLOSE #1
 OPEN filename$ FOR INPUT AS #1
-WHILE h + s + w <> 100
+WHILE h + s + w <> 50
     drawsim
     hp = h * 5
     enemyhealth = (hp * 3) + enemynum * 3
@@ -559,7 +559,7 @@ COLOR 4: PRINT "Enemy Appearing:"
 PRINT "A powerful entity has detected your presence."
 PRINT "Prepare for combat."
 hp = h * 5
-enemyhealth = 10000
+enemyhealth = 1000
 WHILE hp > 0 AND enemyhealth > 0
     CLS
     CALL drawsim
@@ -620,10 +620,114 @@ hp = hp / 5
 END SUB
 
 SUB Underworld
+CLS
 cpoint = 0.2111
 OPEN filename$ FOR OUTPUT AS #1
 WRITE #1, Name$, h, s, w, cpoint, karma
 CLOSE #1
+OPEN filename$ FOR INPUT AS #1
+WHILE h + s + w <> 50
+    drawsim
+    hp = h * 5
+    enemyhealth = (hp * 3) + enemynum * 3
+    WHILE hp > 0 AND enemyhealth > 0
+        CLS
+        CALL drawsim
+        COLOR 15: PRINT "Health ="; hp * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
+        INPUT "", x
+        icechance = 0
+        IF x = 1 THEN
+            CALL punch
+            enemyhealth = enemyhealth - 5 * s
+        ELSEIF x = 2 THEN
+            CALL kick
+            enemyhealth = enemyhealth - 4 * s
+        ELSEIF x = 3 THEN
+            CALL fire
+            enemyhealth = enemyhealth - 3 * w
+            RANDOMIZE TIMER
+            firechance = INT(RND * 2)
+            IF firechance = 1 THEN
+                PRINT "Enemy is set on fire!"
+                enemyhealth = enemyhealth - 2 * w
+            END IF
+        ELSEIF x = 4 THEN
+            CALL ice
+            RANDOMIZE TIMER
+            icechance = INT(RND * 2)
+            IF icechance = 1 THEN
+                CALL drawsim
+                PRINT "Enemy is frozen!"
+            END IF
+            enemyhealth = enemyhealth - 3 * w
+        END IF
+        IF icechance <> 1 THEN CALL enemyturn
+
+    WEND
+    IF hp <= 0 THEN
+        PRINT "YOU DIED, STARTING FROM LAST ENEMY."
+        hp = h * 5
+        enemyhealth = hp * 3
+    ELSEIF enemyhealth <= 0 THEN
+        PRINT "Level up!"
+        enemynum = enemynum + 1
+        CALL levelup
+    END IF
+WEND
+
+
+COLOR 4: PRINT "Enemy Appearing:"
+PRINT "A powerful entity has detected your presence."
+PRINT "Prepare for combat."
+hp = h * 5
+enemyhealth = 1000
+WHILE hp > 0 AND enemyhealth > 0
+    CLS
+    CALL drawsim
+    COLOR 15: PRINT "Health ="; hp * 5; "- Enemy Health ="; enemyhealth; "- Choose an attack:"
+    INPUT "", x
+    icechance = 0
+    IF x = 1 THEN
+        CALL punch
+        enemyhealth = enemyhealth - 5 * s
+    ELSEIF x = 2 THEN
+        CALL kick
+        enemyhealth = enemyhealth - 4 * s
+    ELSEIF x = 3 THEN
+        CALL fire
+        enemyhealth = enemyhealth - 3 * w
+        RANDOMIZE TIMER
+        firechance = INT(RND * 2)
+        IF firechance = 1 THEN
+            PRINT "Enemy is set on fire!"
+            enemyhealth = enemyhealth - 2 * w
+        END IF
+    ELSEIF x = 4 THEN
+        CALL ice
+        RANDOMIZE TIMER
+        icechance = INT(RND * 2)
+        IF icechance = 1 THEN
+            CALL drawsim
+            PRINT "Enemy is frozen!"
+        END IF
+        enemyhealth = enemyhealth - 3 * w
+    END IF
+    IF icechance <> 1 THEN CALL enemyturn2
+
+WEND
+IF hp <= 0 THEN
+    PRINT "YOU DIED, STARTING FROM LAST ENEMY."
+    hp = h * 5
+    enemyhealth = hp * 3
+ELSEIF enemyhealth <= 0 THEN
+    PRINT "Level up!"
+    enemynum = enemynum + 1
+    CALL levelup
+END IF
+
+SLEEP 5
+CLOSE #1
+
 END SUB
 
 SUB levelup
