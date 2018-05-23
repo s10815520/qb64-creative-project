@@ -64,7 +64,9 @@ ELSEIF choice = 2 THEN
     IF cpoint = 0.1111 THEN
         CALL Heaven
     END IF
-
+    IF cpoint = 0.2111 THEN
+        CALL Underworld
+    END IF
     CALL tutorial
 END IF
 
@@ -406,6 +408,7 @@ IF x$ = "Y" THEN
             IF icechance = 1 THEN
                 CALL drawsim
                 PRINT "Enemy is frozen!"
+                SLEEP 1
             END IF
             enemyhealth = enemyhealth - 3 * w
         END IF
@@ -599,9 +602,14 @@ IF hp <= 0 THEN
     hp = h * 5
     enemyhealth = hp * 3
 ELSEIF enemyhealth <= 0 THEN
-    PRINT "Level up!"
-    enemynum = enemynum + 1
-    CALL levelup
+    COLOR 15: PRINT "You won"
+    PRINT "You did it."
+    PRINT "But at what cost?"
+    PRINT "You spent so much time beating the game."
+    PRINT "Have you forgotten the world?"
+    COLOR 7: PRINT "[Status update]"
+    PRINT "You woke up"
+    END
 END IF
 
 SLEEP 5
@@ -709,6 +717,7 @@ WHILE hp > 0 AND enemyhealth > 0
         IF icechance = 1 THEN
             CALL drawsim
             PRINT "Enemy is frozen!"
+            SLEEP 1
         END IF
         enemyhealth = enemyhealth - 3 * w
     END IF
@@ -720,9 +729,14 @@ IF hp <= 0 THEN
     hp = h * 5
     enemyhealth = hp * 3
 ELSEIF enemyhealth <= 0 THEN
-    PRINT "Level up!"
-    enemynum = enemynum + 1
-    CALL levelup
+    COLOR 15: PRINT "You won"
+    PRINT "You did it."
+    PRINT "But at what cost?"
+    PRINT "You spent so much time beating the game."
+    PRINT "Have you forgotten the world?"
+    COLOR 7: PRINT "[Status update]"
+    PRINT "You woke up"
+    END
 END IF
 
 SLEEP 5
@@ -756,3 +770,4 @@ PRINT "Points Saved."
 SLEEP 1
 
 END SUB
+
